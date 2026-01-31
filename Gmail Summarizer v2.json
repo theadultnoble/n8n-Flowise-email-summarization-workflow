@@ -1,0 +1,639 @@
+{
+  "name": "Gmail Summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "nova.noble65@gmail.com"
+        },
+        "options": {
+          "dataPropertyAttachmentsPrefixName": "attachment_",
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        544
+      ],
+      "id": "69fde90d-4bde-451f-8fb2-582a26b6eebb",
+      "name": "Gmail Trigger",
+      "notesInFlow": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R3VXMhhj2EnTYTiS",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "summarizationMethod": "stuff",
+              "prompt": "=Write a summary of the received mail:{{$json.mail }} . Write it to retain all relevant information but still digestable in a simple format. The summary should be addressed to \"Noble\" and should be formal or informal depending on the kind of email it is. You are to write this summary like you are an assistant updating \"Noble\" on received mail, and any necessary actions to take if stated or necessary.\n\nRequirements in the body of the summary:\n- Start with a short paragraph explaning the email (max 50 words)\n- Then provide 3–5 bullet points covering the key details\n- Always include:\n   - Subject: {{ $json.subject }}\n   - The date the message was received {{ $json.date }}\n   - Any links found in the email body (Format the links to be short and readable. Also mention what there they lead to)\n   - Mention who the email is from {{ $json.from.value[0].name }} and what it’s about in plain language."
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        -256
+      ],
+      "id": "6ac3882e-ec65-4748-9701-58e4ceadd604",
+      "name": "Summarization Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "chatgpt-4o-latest"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        -160
+      ],
+      "id": "6c1751de-c1ed-40bf-b489-198e771b0e4e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "bf6ElX0KxG0Qmhb5",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -336,
+        -288
+      ],
+      "id": "f0dde608-e7c2-4cb5-87b4-f67e85151765",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = {\n  subject: $input.first().json.subject,\n  text: $input.first().json.text,\n  sender: $input.first().json.from.value[0].name\n}\n\nreturn (\n  {\n    question:  JSON.stringify(email)\n  }\n);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        352
+      ],
+      "id": "be281956-c8a5-453b-a6d9-8dd47a0a19e5",
+      "name": "Stringify JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n  output.push({\n    json: {\n      ...item.json,\n      date: new Date(item.json.date).toDateString(),\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        352
+      ],
+      "id": "7d035022-97a9-4bea-9df0-ef6ad2ef7af1",
+      "name": "Format Date"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "849708751567305",
+        "recipientPhoneNumber": "=+2348038723728",
+        "textBody": "={{ $json.output.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        -240
+      ],
+      "id": "29c149de-e19a-4552-a63e-42f0fb2d963d",
+      "name": "Send Message 2",
+      "webhookId": "c843aebf-208f-409d-8fa0-c12dc270de1f",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "EM0VcpgSPLt78xCW",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "849708751567305",
+        "recipientPhoneNumber": "=+2348038723728",
+        "textBody": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        352
+      ],
+      "id": "635d9eac-1745-4101-8ac2-4037d27a26ba",
+      "name": "Send Message 1",
+      "webhookId": "c843aebf-208f-409d-8fa0-c12dc270de1f",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "EM0VcpgSPLt78xCW",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/v1/prediction/4fdc6c98-a1bd-4656-a532-97fbc5cebd99",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=question",
+              "value": "={{ $json.question}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        352
+      ],
+      "id": "fb839d32-52e4-400c-a9e9-abec6091cf1c",
+      "name": "Call Flowise Agentflow",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "html",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "mail",
+              "cssSelector": "={{ $json.html }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        -288
+      ],
+      "id": "3af72f3e-f34a-4886-9f43-80bfd9862e3e",
+      "name": "Extract HTML"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        80,
+        848
+      ],
+      "id": "79f16cd4-33da-4d46-9563-5f949e91b63b",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "44a50ec6-b51e-4eeb-ba73-3adec26a3717",
+              "leftValue": "={{Object.keys($binary).length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -128,
+        624
+      ],
+      "id": "efda673b-2a70-470f-94c4-de2c55476049",
+      "name": "If Attachment"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "phoneNumberId": "=849708751567305",
+        "mediaPropertyName": "attachment_0",
+        "additionalFields": {
+          "mediaFileName": "={{$binary.attachment_0.fileName}}"
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        720
+      ],
+      "id": "88186c35-b31d-464a-b6c7-6ffd6b7e87af",
+      "name": "Upload Document",
+      "webhookId": "8de0d418-906a-40c6-820b-cce5fa5db35c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "EM0VcpgSPLt78xCW",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "phoneNumberId": "=849708751567305",
+        "mediaPropertyName": "=attachment_0",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        544
+      ],
+      "id": "b2cee578-5ad8-4421-8f81-e9fa9ea2566d",
+      "name": "Upload Image",
+      "webhookId": "8de0d418-906a-40c6-820b-cce5fa5db35c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "EM0VcpgSPLt78xCW",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "849708751567305",
+        "recipientPhoneNumber": "+234 8038723728",
+        "messageType": "image",
+        "mediaPath": "useMediaId",
+        "mediaId": "={{ $json.id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        544
+      ],
+      "id": "71418a47-f5f8-4b1e-b443-f3c6f1f24910",
+      "name": "Send Image",
+      "webhookId": "2a3fcc3a-7581-40f6-84b8-80513f5440fd",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "EM0VcpgSPLt78xCW",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "849708751567305",
+        "recipientPhoneNumber": "+234 8038723728",
+        "messageType": "document",
+        "mediaPath": "useMediaId",
+        "mediaId": "={{ $json.id }}",
+        "mediaFilename": "={{$('Gmail Trigger').item.binary.attachment_0.fileName}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        720
+      ],
+      "id": "b78119ac-c6c3-43ac-9503-8703039bce13",
+      "name": "Send Document",
+      "webhookId": "2a3fcc3a-7581-40f6-84b8-80513f5440fd",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "EM0VcpgSPLt78xCW",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "849708751567305",
+        "recipientPhoneNumber": "=+2348038723728",
+        "textBody": "Attachment included in Email",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        896
+      ],
+      "id": "e8382c10-5f46-4ebe-9265-d0069fd227f4",
+      "name": "Fallback Message",
+      "webhookId": "c843aebf-208f-409d-8fa0-c12dc270de1f",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "EM0VcpgSPLt78xCW",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$binary.attachment_0.mimeType.startsWith('image/')}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "215fdecc-666e-48a3-9977-cbb9afe08d41"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8d8fcbea-b71b-4700-95d9-5033f7c0d784",
+                    "leftValue": "={{$binary.attachment_0.mimeType.startsWith('application/')}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        592
+      ],
+      "id": "f564bc5b-f98b-4341-b00f-4c432c6bb571",
+      "name": "Attachment Type"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Date",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarization Chain": {
+      "main": [
+        [
+          {
+            "node": "Send Message 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stringify JSON": {
+      "main": [
+        [
+          {
+            "node": "Call Flowise Agentflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Date": {
+      "main": [
+        [
+          {
+            "node": "Stringify JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Flowise Agentflow": {
+      "main": [
+        [
+          {
+            "node": "Send Message 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract HTML": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If Attachment": {
+      "main": [
+        [
+          {
+            "node": "Attachment Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Document": {
+      "main": [
+        [
+          {
+            "node": "Send Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image": {
+      "main": [
+        [
+          {
+            "node": "Send Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Image": {
+      "main": [
+        []
+      ]
+    },
+    "Attachment Type": {
+      "main": [
+        [
+          {
+            "node": "Upload Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload Document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "dynamic",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timezone": "Africa/Lagos",
+    "executionTimeout": -1
+  },
+  "versionId": "9984de6f-b553-49b4-a94f-7c4f11535790",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aa5622232fa13b2a0dd9e77b03ecca0f265655528c53b543c30387b4162d8a1d"
+  },
+  "id": "RgrWERzELCRDnAff",
+  "tags": []
+}
