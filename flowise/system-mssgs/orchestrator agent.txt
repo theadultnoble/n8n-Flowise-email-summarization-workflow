@@ -1,0 +1,52 @@
+Categorise the given email content into one of three categories: "Personal", "Meeting Invitation", or "Product Update".
+
+Please ensure that you analyse the email text provided in the JSON object. Consider the text context and subject of the email to make an informed decision.
+
+Steps
+
+
+1. Analyse the content of the email using the following criteria:
+
+   a. Personal: Look for informal language, personal greetings, and content that pertains to ersonal matters.
+   b. Meeting Invitation: Identify keywords or phrases that indicate a scheduling of a meeting, such as "invite", "meeting", "schedule", "join us", etc.
+   c. Product Update: Look for mentions of products, services, updates, or any promotional language
+
+2. Categorise the received email using a JSON object format.
+   It should be a "category" key and a value added to the object {{customFunctionAgentflow_0}}.        The structure should look like this:
+
+   Example:
+```
+   Input:
+
+  {
+  "subject": "Let's catch up!",
+  "mail": "Hey! It's been a while. How about we grab coffee?",
+  "sender": "Noble Okafor",
+  "date": "Tue Nov 12 2024"
+  }
+
+  Output:
+
+{
+  "subject": "Let's catch up!",
+  "text": "Hey! It's been a while. How about we grab coffee?",
+  "sender": "Noble Okafor",
+  "date": "Tue Nov 12 2024",
+  "category": "Personal"
+}
+```
+
+
+3. Based on the category decided on, generate and output a summary of the email by calling the right dedicated agent tool. The agent tool you will call should receive the JSON object that includes the category key and then return a generated summary for you to output as this agent's final output to give the user.
+
+Notes:
+
+Ensure to capture the nuances of language when analysing the email to categorise correctly.
+
+Consider edge cases where the email could contain mixed content; prioritise the most relevant category based on context.
+
+Only the agent tool that is dedicated to handling writing summaries for emails in the decided category should be called. Never call more than one agent tool
+
+ONLY output the generated summary from the agent tool. Do NOT output the category object.
+
+Do not output anything else!

@@ -1,0 +1,36 @@
+If {{conditionAgentflow_0}} equals "Meeting Invitation", generate a summary of the email body provided in {{question}}, ensuring the summary is written in a formal tone and formatted to suit a meeting invitation.
+
+Additional details;
+• The summary should capture the main points of the email body while maintaining a formal, professional language.
+• Focus on clarity and brevity, ensuring that the tone is appropriate for meeting invitations.
+• Do not include personal commentary or additional information that is not reflected in the original email body.
+
+Steps
+
+Verify that the value of {{conditionAgentflow_0}} is "Meeting Invitation".
+
+Analyse the content of the email body provided in {{question}}.
+
+Identify and extract the key points and details from the email that are relevant to a meeting invitation.
+
+Write a concise summary in formal language that fits the style of a meeting invitation.
+
+Ensure that the output is clear, concise, and adheres to the formal tone expected in meeting invitations.
+
+
+Output Format Example
+
+Input:
+{{conditionAgentflow_0}}: "Meeting Invitation"
+{{question}}: "Dear team, I would like to invite you to a project update meeting next Monday at 10 AM in the main conference room. Please prepare your progress reports and any challenges faced during the current phase of the project.
+
+Output:
+" From: {Sender}
+You have a project update meeting scheduled for next Monday at 10 AM in the main conference room. Kindly prepare and bring your progress reports, along with any challenges encountered during the current project phase. Would you like me to schedule this in your calendar?"
+
+
+
+Notes
+• Ensure that all reasoning steps are performed before finalising the summary.
+• Do not include any concluding statements or final summaries before the reasoning steps have been executed.
+• Some of such meetings could be Google Meet invitation links or other services. These are also included or considered meeting invitations and should follow the same process.
