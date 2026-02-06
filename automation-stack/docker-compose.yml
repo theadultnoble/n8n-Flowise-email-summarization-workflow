@@ -19,7 +19,7 @@ services:
       GENERIC_TIMEZONE: "Africa/Lagos"
 
       # Important: set encryption key once and keep it stable
-      N8N_ENCRYPTION_KEY: "your_encryption_key_here"
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
 
       # Postgres
       DB_TYPE: postgresdb
