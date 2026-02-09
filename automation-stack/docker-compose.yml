@@ -15,9 +15,16 @@ services:
     ports:
       - "5678:5678"
     environment:
+      # Core
+      N8N_HOST: noble-n8n.duckdns.org
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
       NODE_ENV: production
       GENERIC_TIMEZONE: "Africa/Lagos"
+      N8N_SECURE_COOKIE: "false"
+      WEBHOOK_URL: "https://noble-n8n.duckdns.org/"
 
+      # Security
       # Important: set encryption key once and keep it stable
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
 
